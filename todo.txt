@@ -1,0 +1,5 @@
+fix urls with extra stuff in it
+
+https://youtube.com/blah-blah -> youtube
+
+OR maybe just block this particular url

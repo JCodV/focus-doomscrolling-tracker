@@ -8,6 +8,7 @@
     "default_icon": "focus_icon.png"
   },
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage"
   ]
 }

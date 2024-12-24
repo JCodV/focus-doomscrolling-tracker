@@ -1,17 +1,33 @@
 const phrasesToTrim = ["http://", "https://", ".com", ".net"];
+
 let trackedWebsites = [];
-let trimmedWebsites = trackedWebsites.map(trimWebsiteUrl);
+let trimmedTrackedWebsites = [];
+
+chrome.storage.local.get(["trackedWebsites"], (item) => {
+    trackedWebsites = item.trackedWebsites || [];
+    trackedWebsites.forEach(addWebsiteToList);
+
+    console.log("tracked: " + trackedWebsites);
+
+    trimmedTrackedWebsites = trackedWebsites.map(trimWebsiteUrl);
+    console.log("trimmed: " + trimmedTrackedWebsites);
+})
 
 function addTrackedWebsite() {
     const website = document.getElementById("website-to-track").value;
 
     if (!trackedWebsites.includes(website) && website.trim() != "") {
         trackedWebsites.push(website);
-        trimmedWebsites.push(trimWebsiteUrl(website));
+        trimmedTrackedWebsites.push(trimWebsiteUrl(website));
         addWebsiteToList(website);
 
         console.log("Url: " + trackedWebsites);
-        console.log("Trimmed: " + trimmedWebsites);
+        console.log("Trimmed: " + trimmedTrackedWebsites);
+
+        // save the trackedWebsites
+        chrome.storage.local.set({trackedWebsites: trackedWebsites}, (item) => {
+            console.log("Tracked websites were saved");
+        });
     }
 }
 
@@ -28,21 +44,6 @@ async function getCurrentTab() {
     let [tab] = await chrome.tabs.query(queryOptions);
     console.log(tab);
     return tab;
-}
-
-function isDoomscrollingWebsite(tab) {
-    let currUrlTrimmed = trimWebsiteUrl(tab.url);
-
-    for (website in trimmedWebsites) {
-        for (phrase in phrasesToTrim) {
-            let idx = website.search(phrase);
-            if (idx != -1) {
-                website.slice(idx, phrase.length);
-            }
-        }
-    }
-
-    return trimmedWebsites.includes(currUrlTrimmed);
 }
 
 // use for tracked website and current tab url
@@ -64,5 +65,19 @@ function trimWebsiteUrl(url) {
     return trimmedUrl;
 }
 
+function isDoomscrollingWebsite(tab) {
+    let currentTabTrimmed = trimWebsiteUrl(tab.url);
+
+    // for (website of trimmedTrackedWebsites) {
+    //     if (website === trimmed) {
+    //         trimmed = true;
+    //     }
+    // }
+
+    console.log(trimmedTrackedWebsites.includes(currentTabTrimmed));
+    return trimmedTrackedWebsites.includes(currentTabTrimmed);
+}
 
 document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
+
+// let test = chrome.tabs.onUpdated.addListener(isDoomscrollingWebsite);
