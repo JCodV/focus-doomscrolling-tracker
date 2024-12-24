@@ -1,18 +1,21 @@
-let tracked_websites = [];
+let trackedWebsites = [];
 
-function add_tracked_website() {
-    const website = document.getElementById("website_to_track");
-    tracked_websites.push(website.value);
-    
-    console.log(tracked_websites);
+function addTrackedWebsite() {
+    const website = document.getElementById("website-to-track").value;
+
+
+    if (!trackedWebsites.includes(website) && website.trim() != "") {
+        trackedWebsites.push(website);
+        addWebsiteToList(website);
+
+        console.log(trackedWebsites);
+    }
 }
 
-function display_tracked_websites() {
-    let list = document.getElementById("Tracked Websites");
+function addWebsiteToList(website) {
+    let ulTrackedWebsites = document.getElementById("tracked-websites-list");
 
-    tracked_websites.forEach((website_name) => {
-        let li = document.createElement("li");
-        li.innerText = website_name;
-        list.appendChild(li);
-    })
+    let li = document.createElement("li");
+    li.textContent = website;
+    ulTrackedWebsites.appendChild(li);
 }
