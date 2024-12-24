@@ -1,13 +1,17 @@
+const phrasesToTrim = ["http://", "https://", ".com", ".net"];
 let trackedWebsites = [];
+let trimmedWebsites = trackedWebsites.map(trimWebsiteUrl);
 
 function addTrackedWebsite() {
     const website = document.getElementById("website-to-track").value;
 
     if (!trackedWebsites.includes(website) && website.trim() != "") {
         trackedWebsites.push(website);
+        trimmedWebsites.push(trimWebsiteUrl(website));
         addWebsiteToList(website);
 
-        console.log(trackedWebsites);
+        console.log("Url: " + trackedWebsites);
+        console.log("Trimmed: " + trimmedWebsites);
     }
 }
 
@@ -27,14 +31,38 @@ async function getCurrentTab() {
 }
 
 function isDoomscrollingWebsite(tab) {
-    let isDoomscroller = false;
     let currUrlTrimmed = trimWebsiteUrl(tab.url);
-    
+
+    for (website in trimmedWebsites) {
+        for (phrase in phrasesToTrim) {
+            let idx = website.search(phrase);
+            if (idx != -1) {
+                website.slice(idx, phrase.length);
+            }
+        }
+    }
+
+    return trimmedWebsites.includes(currUrlTrimmed);
 }
 
 // use for tracked website and current tab url
+// ex: https://www.youtube.com/blah-blah-blah ----> youtube
 function trimWebsiteUrl(url) {
+    let trimmedUrl = url;
+
     // remove https www .com .net etc.
-    // ex: https://www.reddit.com/ ----> reddit
-    // return string
+    for (phrase of phrasesToTrim) {
+        let idx = trimmedUrl.search(phrase);
+        if (idx !== -1) {
+            let beforePhrase = trimmedUrl.slice(0, idx);
+            let afterPhrase = trimmedUrl.slice(idx + phrase.length);
+
+            trimmedUrl = beforePhrase + afterPhrase;
+        }
+    }
+
+    return trimmedUrl;
 }
+
+
+document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
