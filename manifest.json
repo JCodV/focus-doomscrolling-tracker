@@ -5,6 +5,9 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "focus.html",
-    "default_icon": "focus_extension.png"
-  }
+    "default_icon": "focus_icon.png"
+  },
+  "permissions": [
+    "tabs"
+  ]
 }
