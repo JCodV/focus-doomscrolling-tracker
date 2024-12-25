@@ -78,6 +78,17 @@ function isDoomscrollingWebsite(tab) {
     return trimmedTrackedWebsites.includes(currentTabTrimmed);
 }
 
-document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
+function clearTrackedWebsites() {
+    const websitesList = document.getElementById("tracked-websites-list");
+    while (websitesList.firstChild) {
+        websitesList.removeChild(websitesList.firstChild);
+    }
 
-// let test = chrome.tabs.onUpdated.addListener(isDoomscrollingWebsite);
+    trackedWebsites = [];
+    trimmedTrackedWebsites = [];
+    chrome.storage.local.clear();
+
+}
+
+document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
+document.getElementById("clear-website-list").addEventListener('click', clearTrackedWebsites);
