@@ -2,7 +2,7 @@ const phrasesToTrim = ["http://", "https://", ".com", ".net"];
 
 let trackedWebsites = [];
 let trimmedTrackedWebsites = [];
-let currentWebsite = "";
+let currentWebsiteUrl = "";
 
 function addTrackedWebsite() {
     const website = document.getElementById("website-to-track").value;
@@ -70,3 +70,8 @@ chrome.storage.local.get(["trackedWebsites"], (item) => {
 
 document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
 document.getElementById("clear-website-list").addEventListener('click', clearTrackedWebsites);
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    currentWebsiteUrl = message.tabUrl;
+    console.log("curr website url recieved in popup.js" + currentWebsiteUrl);
+})
