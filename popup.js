@@ -2,16 +2,7 @@ const phrasesToTrim = ["http://", "https://", ".com", ".net"];
 
 let trackedWebsites = [];
 let trimmedTrackedWebsites = [];
-
-chrome.storage.local.get(["trackedWebsites"], (item) => {
-    trackedWebsites = item.trackedWebsites || [];
-    trackedWebsites.forEach(addWebsiteToList);
-
-    console.log("tracked: " + trackedWebsites);
-
-    trimmedTrackedWebsites = trackedWebsites.map(trimWebsiteUrl);
-    console.log("trimmed: " + trimmedTrackedWebsites);
-})
+let currentWebsite = "";
 
 function addTrackedWebsite() {
     const website = document.getElementById("website-to-track").value;
@@ -19,15 +10,9 @@ function addTrackedWebsite() {
     if (!trackedWebsites.includes(website) && website.trim() != "") {
         trackedWebsites.push(website);
         trimmedTrackedWebsites.push(trimWebsiteUrl(website));
+
         addWebsiteToList(website);
-
-        console.log("Url: " + trackedWebsites);
-        console.log("Trimmed: " + trimmedTrackedWebsites);
-
-        // save the trackedWebsites
-        chrome.storage.local.set({trackedWebsites: trackedWebsites}, (item) => {
-            console.log("Tracked websites were saved");
-        });
+        chrome.runtime.sendMessage({ trackedWebsites: trackedWebsites });
     }
 }
 
@@ -39,15 +24,6 @@ function addWebsiteToList(website) {
     ulTrackedWebsites.appendChild(li);
 }
 
-async function getCurrentTab() {
-    let queryOptions = { active: true, lastFocusedWindow: true };
-    let [tab] = await chrome.tabs.query(queryOptions);
-    console.log(tab);
-    return tab;
-}
-
-// use for tracked website and current tab url
-// ex: https://www.youtube.com/blah-blah-blah ----> youtube
 function trimWebsiteUrl(url) {
     let trimmedUrl = url;
 
@@ -67,13 +43,6 @@ function trimWebsiteUrl(url) {
 
 function isDoomscrollingWebsite(tab) {
     let currentTabTrimmed = trimWebsiteUrl(tab.url);
-
-    // for (website of trimmedTrackedWebsites) {
-    //     if (website === trimmed) {
-    //         trimmed = true;
-    //     }
-    // }
-
     console.log(trimmedTrackedWebsites.includes(currentTabTrimmed));
     return trimmedTrackedWebsites.includes(currentTabTrimmed);
 }
@@ -85,10 +54,19 @@ function clearTrackedWebsites() {
     }
 
     trackedWebsites = [];
-    trimmedTrackedWebsites = [];
+    // trimmedTrackedWebsites = [];
     chrome.storage.local.clear();
-
 }
+
+chrome.storage.local.get(["trackedWebsites"], (item) => {
+    trackedWebsites = item.trackedWebsites || [];
+    trackedWebsites.forEach(addWebsiteToList);
+
+    // console.log("tracked: " + trackedWebsites);
+
+    trimmedTrackedWebsites = trackedWebsites.map(trimWebsiteUrl);
+    // console.log("trimmed: " + trimmedTrackedWebsites);
+})
 
 document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
 document.getElementById("clear-website-list").addEventListener('click', clearTrackedWebsites);
