@@ -72,6 +72,6 @@ document.getElementById("add-website-button").addEventListener('click', addTrack
 document.getElementById("clear-website-list").addEventListener('click', clearTrackedWebsites);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    currentWebsiteUrl = message.tabUrl;
+    currentWebsiteUrl = message.currentWebsite;
     console.log("curr website url recieved in popup.js" + currentWebsiteUrl);
 })
