@@ -6,24 +6,35 @@
 let currentWebsite = undefined;
 let doomscrollingWebsites = undefined;
 
-function loadSavedDoomscrollingWebsites() {
+async function loadSavedData() {
+  doomscrollingWebsites = await chrome.storage.local.get("doomscrollingWebsites", (result) => {
+    doomscrollingWebsites = result.doomscrollingWebsites;
+  });
 
+  currentWebsite = await chrome.storage.local.get("currentWebsite", (result) => {
+    currentWebsite = result.currentWebsite;
+  });
 }
 
-function saveCurrentDoomscrollingWebsites() {
+function saveCurrentData() {
   chrome.storage.local.set({ doomscrollingWebsites: doomscrollingWebsites }, () => {
     console.log("The doomscrolling websites list was saved");
   });
+
+  chrome.storage.local.set({ currentWebsite: currentWebsite }, () => {
+    console.log("The current website list was saved");
+  });
+
 }
 
 function addDoomscrollingWebsite(website) {
   doomscrollingWebsites.push(website);
-  saveCurrentDoomscrollingWebsites();
+  saveCurrentData();
 }
 
 function clearDoomscrollingWebsites() {
   doomscrollingWebsites = [];
-  saveCurrentDoomscrollingWebsites();
+  saveCurrentData();
 }
 
 function removeDoomscrollingWebsite(website) {
@@ -31,7 +42,7 @@ function removeDoomscrollingWebsite(website) {
   if (index != -1) {
     currentWebsite.splice(index, 1);
   }
-  saveCurrentDoomscrollingWebsites();
+  saveCurrentData();
 }
 
 function isCurrentTabDoomscrolling() {
@@ -52,3 +63,17 @@ function closeCurrentWebsite() {
     chrome.tabs.remove(tabs[0].id);
   })
 }
+
+// update the url for the current tab using both listeners (1)
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  chrome.tabs.get(activeInfo.tabId, (tab) => {
+    if (tab) {
+      currentWebsite = tab.url;
+    }
+  })
+});
+
+// (2)
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  currentWebsite = tab.url;
+});
