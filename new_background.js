@@ -1,40 +1,57 @@
 // core ideas
-// check current website
-// if its a doomscrolling website --> start timer
-// when timer runs out, close tab!
+// [X] check current website
+// [X] if its a doomscrolling website --> start timer
+// [X] when timer runs out, close tab!
 
 let currentWebsite = undefined;
 let doomscrollingWebsites = undefined;
+let minutesAllotedToDoomscroll = undefined;
 
-async function loadSavedData() {
-  doomscrollingWebsites = await chrome.storage.local.get("doomscrollingWebsites", (result) => {
+async function loadAllSavedData() {
+  await chrome.storage.local.get("doomscrollingWebsites", (result) => {
     doomscrollingWebsites = result.doomscrollingWebsites;
   });
 
-  currentWebsite = await chrome.storage.local.get("currentWebsite", (result) => {
-    currentWebsite = result.currentWebsite;
-  });
+  //await chrome.storage.local.get("currentWebsite", (result) => {
+  //  currentWebsite = result.currentWebsite;
+  //});
+
+  await chrome.storage.local.get("minutesAllotedToDoomscroll", (result) => {
+    minutesAllotedToDoomscroll = result.minutesAllotedToDoomscroll;
+  })
 }
 
-function saveCurrentData() {
+function saveDoomscrollingList() {
   chrome.storage.local.set({ doomscrollingWebsites: doomscrollingWebsites }, () => {
     console.log("The doomscrolling websites list was saved");
   });
+}
 
-  chrome.storage.local.set({ currentWebsite: currentWebsite }, () => {
-    console.log("The current website list was saved");
+//function saveCurrentWebsite() {
+//  chrome.storage.local.set({ currentWebsite: currentWebsite }, () => {
+//    console.log("The current website list was saved");
+//  });
+//}
+
+function saveMinutesAllotedToDoomscroll() {
+  chrome.storage.local.set({ minutesAllotedToDoomscroll: minutesAllotedToDoomscroll }, () => {
+    console.log("The time (in minutes) alloted to doomscrolling was saved");
   });
-
+}
+function saveAllData() {
+  saveDoomscrollingList();
+  //saveCurrentWebsite();
+  saveMinutesAllotedToDoomscroll();
 }
 
 function addDoomscrollingWebsite(website) {
   doomscrollingWebsites.push(website);
-  saveCurrentData();
+  saveDoomscrollingList();
 }
 
 function clearDoomscrollingWebsites() {
   doomscrollingWebsites = [];
-  saveCurrentData();
+  saveDoomscrollingList();
 }
 
 function removeDoomscrollingWebsite(website) {
@@ -42,7 +59,7 @@ function removeDoomscrollingWebsite(website) {
   if (index != -1) {
     currentWebsite.splice(index, 1);
   }
-  saveCurrentData();
+  saveDoomscrollingList();
 }
 
 function isCurrentTabDoomscrolling() {
@@ -64,16 +81,28 @@ function closeCurrentWebsite() {
   })
 }
 
-// update the url for the current tab using both listeners (1)
+function currentTabUpdateEvent(tab) {
+  if (tab) {
+    currentWebsite = tab.url;
+    if (isCurrentTabDoomscrolling()) {
+      startTimer(minutesAllotedToDoomscroll);
+    }
+  }
+  else {
+    console.log("currentTabUpdateEvent: current tab is undefined");
+  }
+}
+
+// update the url for the current tab & check if user is doomscrolling using both listeners (1)
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
     if (tab) {
-      currentWebsite = tab.url;
+      currentTabUpdateEvent(tab);
     }
   })
 });
 
 // (2)
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  currentWebsite = tab.url;
+  currentTabUpdateEvent(tab);
 });
