@@ -1,13 +1,8 @@
-const phrasesToTrim = ["http://", "https://", ".com", ".net"];
-
-let currentWebsite = undefined;
-let doomscrollingWebsites = undefined;
-let minutesAllotedToDoomscroll = undefined;
+//const phrasesToTrim = ["http://", "https://", ".com", ".net"];
 
 async function clearDoomscrollingWebsites() {
     const message = {
         action: "clear_doomscrolling_websites",
-        data: { key: "doomscrollingWebsites", value: doomscrollingWebsites }
     };
 
     try {
@@ -20,15 +15,15 @@ async function clearDoomscrollingWebsites() {
 }
 
 async function addDoomscrollingWebsite() {
+    const websiteToAdd = document.getElementById("new-website-input-box").value;
     const message = {
         action: "add_doomscrolling_website",
-        websites: { key: "doomscrollingWebsites", value: doomscrollingWebsites },
-        new_website: { key: "newWebsite", value: newWebsite },
+        websiteToAdd,
     };
 
     try {
         const response = await chrome.runtime.sendMessage(message);
-        console.log("Successfully cleared the doomscrolling websites list");
+        console.log("Successfully cleared the doomscrolling websites list" + response);
     }
     catch (error) {
         console.log("Error sending message to background.js, " + error);

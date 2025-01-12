@@ -46,14 +46,12 @@ function saveAllData() {
   saveMinutesAllotedToDoomscroll();
 }
 
-function addDoomscrollingWebsite(websiteList, website) {
-  websiteList.push(website);
-  saveDoomscrollingList();
+function addDoomscrollingWebsite(website) {
+  doomscrollingWebsites.push(website);
 }
 
 function clearDoomscrollingWebsites() {
   doomscrollingWebsites = [];
-  saveDoomscrollingList();
 }
 
 function removeDoomscrollingWebsite(website) {
@@ -61,7 +59,6 @@ function removeDoomscrollingWebsite(website) {
   if (index != -1) {
     currentWebsite.splice(index, 1);
   }
-  saveDoomscrollingList();
 }
 
 function isCurrentTabDoomscrolling() {
@@ -95,6 +92,12 @@ function currentTabUpdateEvent(tab) {
   }
 }
 
+function sendDoomscrollingList() {
+  chrome.runtime.sendMessage({
+    action: "update_list",
+    doomscrollingWebsites,
+  });
+}
 // update the url for the current tab & check if user is doomscrolling using both listeners (1)
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
@@ -112,10 +115,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.OnMessage.addListener((message, sender, sendResponse) => {
   switch (message.action) {
     case "add_doomscrolling_website":
-      addDoomscrollingWebsite();
+      addDoomscrollingWebsite(message.websiteToAdd);
+      saveDoomscrollingList();
+      sendDoomscrollingList();
       break;
     case "clear_doomscrolling_website":
       clearDoomscrollingWebsites();
+      saveDoomscrollingList();
+      sendDoomscrollingList();
       break;
   }
 })
