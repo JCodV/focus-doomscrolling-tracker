@@ -25,6 +25,8 @@ function saveDoomscrollingList() {
   chrome.storage.local.set({ doomscrollingWebsites: doomscrollingWebsites }, () => {
     console.log("The doomscrolling websites list was saved");
   });
+
+  chrome.runtime.sendMessage()
 }
 
 //function saveCurrentWebsite() {
@@ -44,8 +46,8 @@ function saveAllData() {
   saveMinutesAllotedToDoomscroll();
 }
 
-function addDoomscrollingWebsite(website) {
-  doomscrollingWebsites.push(website);
+function addDoomscrollingWebsite(websiteList, website) {
+  websiteList.push(website);
   saveDoomscrollingList();
 }
 
@@ -106,3 +108,14 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   currentTabUpdateEvent(tab);
 });
+
+chrome.runtime.OnMessage.addListener((message, sender, sendResponse) => {
+  switch (message.action) {
+    case "add_doomscrolling_website":
+      addDoomscrollingWebsite();
+      break;
+    case "clear_doomscrolling_website":
+      clearDoomscrollingWebsites();
+      break;
+  }
+})
