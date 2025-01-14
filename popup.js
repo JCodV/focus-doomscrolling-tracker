@@ -5,6 +5,9 @@ async function clearDoomscrollingWebsites() {
         action: "clear_doomscrolling_websites",
     };
 
+    console.log("Attempting to clear doomscrolling websites list");
+    console.log("Sending message from popup.js to background.js");
+
     try {
         const response = await chrome.runtime.sendMessage(message);
         console.log("Successfully cleared the doomscrolling websites list");
@@ -12,6 +15,8 @@ async function clearDoomscrollingWebsites() {
     catch (error) {
         console.log("Error sending message to background.js, " + error);
     }
+
+    return true;
 }
 
 async function addDoomscrollingWebsite() {
@@ -28,10 +33,37 @@ async function addDoomscrollingWebsite() {
     catch (error) {
         console.log("Error sending message to background.js, " + error);
     }
+
+    return true;
 }
 
-document.getElementById("add-website-button").addEventListener('click', addTrackedWebsite);
-document.getElementById("clear-website-list").addEventListener('click', clearTrackedWebsites);
+function clearTrackedWebsites() {
+    const websitesList = document.getElementById("tracked-websites-list");
+    while (websitesList.firstChild) {
+        websitesList.removeChild(websitesList.firstChild);
+    }
+}
+
+function addWebsiteToList(websiteURL) {
+    let ulTrackedWebsites = document.getElementById("tracked-websites-list");
+
+    let li = document.createElement("li");
+    li.textContent = website;
+    ulTrackedWebsites.appendChild(li);
+}
+
+document.getElementById("add-website-button").addEventListener('click', addDoomscrollingWebsite);
+document.getElementById("clear-website-list").addEventListener('click', clearDoomscrollingWebsites);
+
+// updates from service worker
+
+chrome.runtime.OnMessage.addListener((message, sender, sendResponse) => {
+    switch (message.action) {
+        case "update_list":
+            console.log("working");
+            break;
+    }
+})
 
 //function addTrackedWebsite() {
 //    const website = document.getElementById("website-to-track").value;
@@ -45,13 +77,6 @@ document.getElementById("clear-website-list").addEventListener('click', clearTra
 //    }
 //}
 //
-//function addWebsiteToList(website) {
-//    let ulTrackedWebsites = document.getElementById("tracked-websites-list");
-//
-//    let li = document.createElement("li");
-//    li.textContent = website;
-//    ulTrackedWebsites.appendChild(li);
-//}
 //
 //function trimWebsiteUrl(url) {
 //    let trimmedUrl = url;
@@ -76,16 +101,6 @@ document.getElementById("clear-website-list").addEventListener('click', clearTra
 //    return trimmedTrackedWebsites.includes(currentTabTrimmed);
 //}
 //
-//function clearTrackedWebsites() {
-//    const websitesList = document.getElementById("tracked-websites-list");
-//    while (websitesList.firstChild) {
-//        websitesList.removeChild(websitesList.firstChild);
-//    }
-//
-//    trackedWebsites = [];
-//    // trimmedTrackedWebsites = [];
-//    chrome.storage.local.clear();
-//}
 //
 //chrome.storage.local.get(["trackedWebsites"], (item) => {
 //    trackedWebsites = item.trackedWebsites || [];
